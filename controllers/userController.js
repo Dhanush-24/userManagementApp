@@ -5,6 +5,7 @@ const jwt=require('jsonwebtoken')
 
 
 
+
 let register = async(req, res) => {
     let {email,name,password}=req.body;
     console.log(email,name,password);
@@ -38,6 +39,8 @@ let register = async(req, res) => {
     let {inp_email,inp_password}=req.body;
     let user=await User.findOne({email:inp_email}) 
     let isValidPWD= await bcrypt.compare(inp_password,user.password);
+    let payload={id:user.id}
+
     if(!isValidPWD){
         res.status(400).send({"message":"user not found"})
     }
@@ -45,17 +48,18 @@ let register = async(req, res) => {
         jwt.sign(
             payload,
             process.env.JWT_SECRET,
-            {
-                expiresIn:'1h'
-            },(err,token)=>{
-                if(err){
-                    throw err;
-                }
-                else{
-                    res.send(token)
-                }
-            })
-            .catch(()=>{console.log("error signingjwt!")})
+            { expiresIn: '1h' },
+            (err, token) => {
+              if (err) {
+                console.log("error signing JWT!", err);
+                return res.status(500).send({ message: "JWT signing failed" });
+              } else {
+                res.send(token);
+                console.log(user);
+              }
+            }
+          );
+          
     } }
 
 
